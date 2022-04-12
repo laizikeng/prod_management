@@ -2,7 +2,7 @@
   <div>
     <BasicTable @register="registerTable" @fetch-success="onFetchSuccess">
       <template #toolbar>
-        <a-button type="primary" @click="handleCreate"> 新增角色 </a-button>
+        <a-button type="primary" @click="handleCreate"> 新增客户 </a-button>
       </template>
       <template #action="{ record }">
         <TableAction
@@ -23,7 +23,7 @@
         />
       </template>
     </BasicTable>
-    <RoleDrawer @register="registerDrawer" @success="handleSuccess" />
+    <CustomerModal @register="registerModal" @success="handleSuccess" />
   </div>
 </template>
 <script lang="ts">
@@ -31,25 +31,23 @@
   import { toRaw } from '@vue/reactivity';
 
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
-  import { getRoleList } from '/@/api/sys/role';
+  import { getCustomerList, deleteCustomer } from '/@/api/sale/customer';
+  import { useModal } from '/@/components/Modal';
+  // import RoleDrawer from './RoleDrawer.vue';
+  import CustomerModal from './CustomerModal.vue';
 
-  import { useDrawer } from '/@/components/Drawer';
-  import RoleDrawer from './RoleDrawer.vue';
-
-  import { columns, searchFormSchema } from './role.data';
+  import { columns, searchFormSchema } from './customer.data';
 
   import type { PaginationProps } from '/@/components/Table/src/types/pagination';
 
-  import { deleteRole } from '/@/api/sys/role';
-
   export default defineComponent({
     name: 'RoleManagement',
-    components: { BasicTable, RoleDrawer, TableAction },
+    components: { BasicTable, CustomerModal, TableAction },
     setup() {
-      const [registerDrawer, { openDrawer }] = useDrawer();
+      const [registerModal, { openModal }] = useModal();
       const [registerTable, { reload, getRawDataSource, setTableData, setPagination }] = useTable({
         title: '角色列表',
-        api: getRoleList,
+        api: getCustomerList,
         columns,
         formConfig: {
           labelWidth: 120,
@@ -69,13 +67,13 @@
       });
 
       function handleCreate() {
-        openDrawer(true, {
+        openModal(true, {
           isUpdate: false,
         });
       }
 
       function handleEdit(record: Recordable) {
-        openDrawer(true, {
+        openModal(true, {
           record,
           isUpdate: true,
         });
@@ -84,7 +82,7 @@
       function handleDelete(record: Recordable) {
         let ids: string = '';
         ids = toRaw(record)['id'];
-        deleteRole(ids).then(() => {
+        deleteCustomer(ids).then(() => {
           reload();
         });
       }
@@ -103,7 +101,7 @@
 
       return {
         registerTable,
-        registerDrawer,
+        registerModal,
         onFetchSuccess,
         handleCreate,
         handleEdit,
